@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=67.0.0"]
+build-backend = "setuptools.build_meta"
+
+
+[project]
+name = "to_do_list_cli"
+version = "1.0.0"
+dependencies = [
+    "click",
+    "pydantic",
+    "pydantic-settings",
+    "psycopg",
+    "sqlalchemy",
+    "alembic"
+]
+
+[project.scripts]
+todo = "to_do_list.cli:cli"
