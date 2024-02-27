@@ -2,6 +2,7 @@ from .database import Base
 from sqlalchemy import ForeignKey, String, TIMESTAMP
 from sqlalchemy.orm import Mapped, mapped_column
 from datetime import date, datetime
+
 class User(Base):
     __tablename__ = "app_user"
     id: Mapped[int] = mapped_column(primary_key=True)

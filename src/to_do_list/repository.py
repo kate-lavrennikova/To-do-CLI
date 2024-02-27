@@ -1,9 +1,10 @@
 from sqlalchemy import select, func
 from sqlalchemy.orm import aliased
+from sqlalchemy.exc import IntegrityError, NoResultFound
 from to_do_list.database import session_factory
 from to_do_list.models import Task, User, UserSession
 from datetime import datetime, timedelta
-from to_do_list.exceptions import SessionHasExpiredException
+from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsExeption, UserNotLoggedInException
 
 
 class TaskRepository:
@@ -28,6 +29,7 @@ class TaskRepository:
             session.add(task)
             session.commit()
 
+
     def update(self, date, fake_id, user_id, **kwargs):
         with session_factory() as session:
             query = select(Task).filter_by(task_date=date, user_id=user_id).order_by(Task.timestamp).offset(fake_id - 1).limit(1)
@@ -50,9 +52,12 @@ class TaskRepository:
 
 class UserRepository:
     def create(self, user):
-        with session_factory() as session:
-            session.add(user)
-            session.commit()
+        try:
+            with session_factory() as session:
+                session.add(user)
+                session.commit()
+        except IntegrityError:
+            raise UserAlreadyExistsExeption(user.user_name)
 
     def get_by_username_and_password(self, username, password):
         with session_factory() as session:
@@ -86,7 +91,10 @@ class SessionRepository:
 
     def get_current_session(self):
          with session_factory() as session:
-            user_session = session.execute(select(UserSession)).scalar_one()
+            try:
+                user_session = session.execute(select(UserSession)).scalar_one()
+            except NoResultFound:
+                raise UserNotLoggedInException
             if (user_session.last_updated + timedelta(hours=+1) <= datetime.now()):
                 session.delete(user_session)
                 session.commit()
