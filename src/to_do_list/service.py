@@ -1,5 +1,6 @@
 from datetime import datetime, timedelta
-from to_do_list.exceptions import SessionHasExpiredException
+
+
 class TaskService:
 
     def __init__(self, repository):
@@ -8,11 +9,11 @@ class TaskService:
     def create(self, task):
         self.repository.create(task)
 
-    def delete(self, id):
-        self.repository.delete(id)
+    def delete(self, date, fake_id, user_id):
+        self.repository.delete(date, fake_id, user_id)
 
-    def update(self, id, **kwargs):
-        self.repository.update(id, **kwargs)
+    def update(self, date, fake_id, user_id, **kwargs):
+        self.repository.update(date, fake_id, user_id, **kwargs)
 
     def get_filtered(self, **kwargs):
         return self.repository.get_filtered(**kwargs)
@@ -33,6 +34,7 @@ class UserService:
     def login(self, username, password):
         user_id = self.user_repository.get_by_username_and_password(username, password)
         if user_id != None:
+            self.session_repository.delete()
             self.session_repository.create(user_id)
         return user_id != None
     
@@ -40,11 +42,7 @@ class UserService:
         self.session_repository.delete()
 
     def get_current_user(self):
-        user_session = self.session_repository.get()
-        if (user_session.last_updated + timedelta(hours=+1) <= datetime.now()):
-            self.session_repository.delete()
-            raise SessionHasExpiredException()
-        self.session_repository.update(user_session.id)
+        user_session = self.session_repository.get_current_session()
         return user_session.user_id
     
     

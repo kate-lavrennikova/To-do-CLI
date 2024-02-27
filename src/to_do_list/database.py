@@ -9,3 +9,6 @@ session_factory = sessionmaker(engine)
 
 class Base(DeclarativeBase):
     pass
+
+def db_init():
+    Base.metadata.create_all(engine)
