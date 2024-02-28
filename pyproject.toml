@@ -15,5 +15,13 @@ dependencies = [
     "alembic"
 ]
 
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock"
+]
+
+
 [project.scripts]
 todo = "to_do_list.cli:cli"
