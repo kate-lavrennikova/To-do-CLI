@@ -25,6 +25,15 @@ class Task(Base):
         done = "\u2611" if self.done else "\u2610"
         important = "\u22C6" if self.important else " "
         return f"{self.task_date}  {self.id}  {done}  {self.task_description}  {important}"
+    
+    def __eq__(self, obj) -> bool:
+        return self.user_id == obj.user_id and \
+        self.task_date == obj.task_date and \
+        self.task_description == obj.task_description and \
+        self.done == obj.done and \
+        self.important == obj.important and \
+        self.timestamp == obj.timestamp and \
+        self.id == obj.id
 
 class UserSession(Base):
     __tablename__ = "user_session"
