@@ -22,3 +22,8 @@ class DatabaseIsNotAvailableException(Exception):
     def __init__(self):
         self.message = f"Lost connection with database"
         super().__init__(self.message)
+
+class TaskNotFoundException(Exception):
+    def __init__(self, id, date):
+        self.message = f"Task №{id} for {date} not found"
+        super().__init__(self.message)

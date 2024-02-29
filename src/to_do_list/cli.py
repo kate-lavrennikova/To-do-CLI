@@ -4,7 +4,7 @@ from to_do_list.models import Task, User
 from to_do_list.service import TaskService, UserService
 from to_do_list.repository import TaskRepository, UserRepository, SessionRepository
 from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsExeption, \
-    UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException
+    UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException, TaskNotFoundException
 from to_do_list.database import db_init
 
 task_service = TaskService(TaskRepository())
@@ -17,7 +17,11 @@ def cli():
 @cli.command()
 def init():
     """Initialize database"""
-    db_init()    
+    try:
+        db_init()
+    except DatabaseIsNotAvailableException as e:
+        click.echo(e.message)
+
 
 @cli.command("show")
 @click.option("-d", "--day", type = DAY, default="today", help="A day to show. Possible values: today (by default), yesterday, tommorrow, particular day in format YYYY-MM-dd")
@@ -90,11 +94,12 @@ def update(date_and_id, day, done, important, desc):
             kwargs["done"] = done
         if (important != None):
             kwargs["important"] = important
-        if (important != None):
-            kwargs["description"] = desc
+        if (desc != None):
+            kwargs["task_description"] = desc
         task_service.update(date_and_id[0], date_and_id[1], user_id, **kwargs)
 
-    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, \
+            DatabaseIsNotInitializedException, DatabaseIsNotAvailableException, TaskNotFoundException) as e:
         click.echo(e.message)
 
     except:
@@ -108,7 +113,8 @@ def delete(date_and_id):
         user_id = user_service.get_current_user()
         task_service.delete(date_and_id[0], date_and_id[1], user_id)
 
-    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, \
+            DatabaseIsNotInitializedException, DatabaseIsNotAvailableException, TaskNotFoundException) as e:
         click.echo(e.message)
 
     except:

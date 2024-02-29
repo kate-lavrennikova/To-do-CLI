@@ -5,7 +5,7 @@ from to_do_list.database import session_factory
 from to_do_list.models import Task, User, UserSession
 from datetime import datetime, timedelta
 from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsExeption, \
-    UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException
+    UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException, TaskNotFoundException
 
 
 class TaskRepository:
@@ -46,12 +46,14 @@ class TaskRepository:
         try:
             with session_factory() as session:
                 query = select(Task).filter_by(task_date=date, user_id=user_id).order_by(Task.timestamp).offset(fake_id - 1).limit(1)
-                task = session.execute(query).scalar()
+                task = session.execute(query).scalar_one()
                 for k, v in kwargs.items():
                     if k == "task_date":
                         task.timestamp = datetime.now()
                     setattr(task, k, v)
                 session.commit()
+        except NoResultFound:
+            raise TaskNotFoundException(fake_id, date)
         except ProgrammingError:
             raise DatabaseIsNotInitializedException()
         except OperationalError:
@@ -62,9 +64,11 @@ class TaskRepository:
         try:
             with session_factory() as session:
                 query = select(Task).filter_by(task_date=date, user_id=user_id).order_by(Task.timestamp).offset(fake_id - 1).limit(1)
-                task = session.execute(query).scalar()
+                task = session.execute(query).scalar_one()
                 session.delete(task)
                 session.commit()
+        except NoResultFound:
+            raise TaskNotFoundException(fake_id, date)
         except ProgrammingError:
             raise DatabaseIsNotInitializedException()
         except OperationalError:
