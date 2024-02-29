@@ -8,7 +8,7 @@ from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsE
 
 
 class TaskRepository:
-    def get_filtered(self, **kwargs):
+    def get_tasks(self, **kwargs):
         with session_factory() as session:
             t = aliased(Task)
             query = select(
@@ -16,6 +16,7 @@ class TaskRepository:
                 t.task_date,
                 t.done,
                 t.important,
+                t.user_id,
                 func.rank().over(order_by=t.timestamp).label("id")
             ).select_from(t).filter_by(**kwargs)
             result = []
@@ -51,6 +52,12 @@ class TaskRepository:
 
 
 class UserRepository:
+
+    def get_all(self):
+        with session_factory() as session:
+            return session.execute(select(User)).scalars().all()
+
+
     def create(self, user):
         try:
             with session_factory() as session:
@@ -84,9 +91,9 @@ class SessionRepository:
     def delete(self):
         with session_factory() as session:
             query = select(UserSession)
-            user_session = session.execute(query).first()
+            user_session = session.execute(query).scalar()
             if user_session != None:
-                session.delete(user_session.tuple()[0])
+                session.delete(user_session)
                 session.commit()
 
     def get_current_session(self):

@@ -31,7 +31,7 @@ def show(day, done, important):
             kwargs["done"] = done
         if (important != None):
             kwargs["important"] = important
-        result = task_service.get_filtered(**kwargs)
+        result = task_service.get_tasks(**kwargs)
         for task in result:
             click.echo(task, nl=True)
         if len(result) == 0:
@@ -73,7 +73,7 @@ def add(description, day, done, important):
 @click.option("--important/--not-important", default=None, help="Mark task as important/not important")
 @click.option("--desc",  help="New description for task")
 def update(date_and_id, day, done, important, desc):
-    """Update a task by id"""
+    """Update a task by date and id"""
     try:
         if (day == None and done == None and important == None and desc == None):
             click.echo("Define at least one parameter to change")
@@ -110,7 +110,7 @@ def delete(date_and_id):
     except (SessionHasExpiredException, UserNotLoggedInException) as e:
         click.echo(e.message)
 
-    except :
+    except:
         click.echo("Something went wrong...")
 
 @cli.command("create-user")

@@ -15,8 +15,8 @@ class TaskService:
     def update(self, date, fake_id, user_id, **kwargs):
         self.repository.update(date, fake_id, user_id, **kwargs)
 
-    def get_filtered(self, **kwargs):
-        return self.repository.get_filtered(**kwargs)
+    def get_tasks(self, **kwargs):
+        return self.repository.get_tasks(**kwargs)
     
 
 class UserService:
@@ -44,6 +44,9 @@ class UserService:
     def get_current_user(self):
         user_session = self.session_repository.get_current_session()
         return user_session.user_id
+    
+    def get_all(self):
+        return self.user_repository.get_all()
     
     
 

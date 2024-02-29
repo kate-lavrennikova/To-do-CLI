@@ -32,8 +32,7 @@ class Task(Base):
         self.task_description == obj.task_description and \
         self.done == obj.done and \
         self.important == obj.important and \
-        self.timestamp == obj.timestamp and \
-        self.id == obj.id
+        self.timestamp == obj.timestamp
 
 class UserSession(Base):
     __tablename__ = "user_session"
