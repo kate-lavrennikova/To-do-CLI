@@ -3,7 +3,8 @@ from to_do_list.custom_types import DAY
 from to_do_list.models import Task, User
 from to_do_list.service import TaskService, UserService
 from to_do_list.repository import TaskRepository, UserRepository, SessionRepository
-from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsExeption, UserNotLoggedInException
+from to_do_list.exceptions import SessionHasExpiredException, UserAlreadyExistsExeption, \
+    UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException
 from to_do_list.database import db_init
 
 task_service = TaskService(TaskRepository())
@@ -37,10 +38,10 @@ def show(day, done, important):
         if len(result) == 0:
             click.echo(f"No tasks found for {day}")
 
-    except (SessionHasExpiredException, UserNotLoggedInException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
         click.echo(e.message)
 
-    except :
+    except:
          click.echo("Something went wrong...")
 
 
@@ -59,10 +60,10 @@ def add(description, day, done, important):
         task = Task(task_description=description, task_date=day, done=done, important=important, user_id=user_id)
         task_service.create(task)
 
-    except (SessionHasExpiredException, UserNotLoggedInException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
         click.echo(e.message)
 
-    except :
+    except:
          click.echo("Something went wrong...")
 
 
@@ -93,10 +94,10 @@ def update(date_and_id, day, done, important, desc):
             kwargs["description"] = desc
         task_service.update(date_and_id[0], date_and_id[1], user_id, **kwargs)
 
-    except (SessionHasExpiredException, UserNotLoggedInException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
         click.echo(e.message)
 
-    except :
+    except:
          click.echo("Something went wrong...")
 
 @cli.command("delete")
@@ -107,7 +108,7 @@ def delete(date_and_id):
         user_id = user_service.get_current_user()
         task_service.delete(date_and_id[0], date_and_id[1], user_id)
 
-    except (SessionHasExpiredException, UserNotLoggedInException) as e:
+    except (SessionHasExpiredException, UserNotLoggedInException, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
         click.echo(e.message)
 
     except:
@@ -122,8 +123,8 @@ def create_user(username, password):
         user = User(user_name=username, user_password=password)
         user_service.create(user)
         click.echo("User successfully created!")
-    except UserAlreadyExistsExeption as e:
-        click.echo(e)
+    except (UserAlreadyExistsExeption, DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
+        click.echo(e.message)
 
 @cli.command("login")
 @click.option("--username", prompt="Username")
@@ -134,16 +135,19 @@ def login(username, password):
         if user_service.login(username.strip(), password.strip()):
             click.echo(f"Welcome, {username}!")
         else: click.echo(f"Wrong username or password")
-    except:
-        click.echo("Initialize db first. Use command 'init'")
+    except (DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
+        click.echo(e.message)
 
 
 @cli.command("logout")
 def logout():
     """Log out"""
-    user_service.logout()
-    if click.confirm(f"Are you sure?"):
+    try:
         user_service.logout()
-        click.echo(f"You successfully logged out.")
-    else:
-        click.echo("Aborted!")
+        if click.confirm(f"Are you sure?"):
+            user_service.logout()
+            click.echo(f"You successfully logged out.")
+        else:
+            click.echo("Aborted!")
+    except (DatabaseIsNotInitializedException, DatabaseIsNotAvailableException) as e:
+        click.echo(e.message)
