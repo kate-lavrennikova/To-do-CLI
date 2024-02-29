@@ -10,7 +10,7 @@ dependencies = [
     "click",
     "pydantic",
     "pydantic-settings",
-    "psycopg",
+    "psycopg[binary,pool]",
     "sqlalchemy",
     "alembic"
 ]
