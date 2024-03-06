@@ -1,6 +1,6 @@
 class SessionHasExpiredException(Exception):
     def __init__(self):
-        self.message = f"Session has expired. Login again please."
+        self.message = f"Your session has expired. Login again please."
         super().__init__(self.message)
 
 class UserAlreadyExistsExeption(Exception):
@@ -10,7 +10,7 @@ class UserAlreadyExistsExeption(Exception):
 
 class UserNotLoggedInException(Exception):
     def __init__(self):
-        self.message = f"Please login to get an access to your tasks"
+        self.message = f"Please log in to get an access to your tasks"
         super().__init__(self.message)
 
 class DatabaseIsNotInitializedException(Exception):

@@ -5,8 +5,9 @@ from to_do_list.models import User, Task
 from datetime import date, timedelta
 from to_do_list.repository import TaskRepository, UserRepository, SessionRepository
 from to_do_list.service import TaskService, UserService
+from to_do_list.database import Session
 
-@pytest.fixture(scope="module", autouse=True)
+@pytest.fixture(scope="session", autouse=True)
 def setup_db():
     assert settings.MODE == "TEST"
     Base.metadata.drop_all(engine)
@@ -23,7 +24,7 @@ def tasks():
         Task(task_description="Go to gym", task_date=date.today(), done=True, important=True, user_id=2)
     ]
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def users():
     return [
         User(user_name="Jack", user_password="12345"),
@@ -31,17 +32,37 @@ def users():
         User(user_name="Peter", user_password="zxcvb")
     ]
 
-@pytest.fixture
+@pytest.fixture(scope="session")
+def user():
+    return User(user_name="Jack", user_password="12345")
+
+@pytest.fixture(scope="session")
 def task_service():
     return TaskService(TaskRepository())
 
-@pytest.fixture
+@pytest.fixture(scope="session")
 def user_service():
     return UserService(UserRepository(), SessionRepository())
 
-@pytest.fixture()
-def add_users_to_db(user_service, users):
-    if len(user_service.get_all()) == 0:
-        for user in users:
-            user_service.create(user)
+@pytest.fixture(scope="class")
+def not_empty_users(user_service, users, session):
+    user_service.delete_all(session)
+    for user in users:
+        user_service.create(session, user)
+    session.commit()
 
+
+@pytest.fixture(scope="class")
+def session():
+    with Session() as session:
+        yield session
+
+@pytest.fixture
+def empty_users(user_service, session):
+    user_service.logout(session)
+    session.flush()
+    user_service.delete_all(session)
+
+@pytest.fixture
+def empty_tasks(task_service, session):
+    task_service.delete_all(session)
