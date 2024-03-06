@@ -1,0 +1,33 @@
+services:
+  postgres:
+    image: "postgres:13"
+    ports: 
+      - 5432:5432
+    networks: 
+      - app-network
+    volumes:
+      - "postgres-volume:/data"
+    environment:
+      - POSTGRES_USER=user1
+      - POSTGRES_PASSWORD=123456
+      - POSTGRES_DB=todo
+
+  app:
+    build: ./todo
+    networks:
+      - app-network
+    environment:
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - USER=user1
+      - PASS=123456
+      - DB_NAME=todo
+      - MODE=DEV
+    depends_on:
+      - postgres
+
+networks:
+  app-network:
+
+volumes: 
+  postgres-volume:

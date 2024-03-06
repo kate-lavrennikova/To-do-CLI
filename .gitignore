@@ -2,4 +2,4 @@
 venv/
 __pycache__
 .vscode/
-src/to_do_list_cli.egg-info/
+to_do_list_cli.egg-info/
